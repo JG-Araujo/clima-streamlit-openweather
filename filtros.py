@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import api_clima as ac
+from servicos_api import api_clima as ac
 def filtros_sidebar(df: pd.DataFrame):
     # st.sidebar.header("Filtros (Drill-down)")
     global cities_filter

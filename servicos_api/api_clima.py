@@ -1,8 +1,7 @@
 import requests
-from config import chave_api
 import sys
+from config import chave_api
 sys.stdout.reconfigure(encoding='utf-8')
-
 
 def obter_coordenadas(cidade):
     url = "https://api.openweathermap.org/geo/1.0/direct"

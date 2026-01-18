@@ -2,6 +2,17 @@ import streamlit as st
 import filtros as f
 import time
 from util import traduzir_aqi # Importa a função nova
+from visualizacoes.graficos import (
+    grafico_clima_atual,
+    grafico_previsao_temperatura,
+    grafico_poluicao_ar
+)
+
+from visualizacoes.tabelas import (
+    tabela_clima_atual,
+    formatar_previsao_48h
+)
+
 
 # 1. Configuração da página (Modo Wide para aproveitar espaço)
 st.set_page_config(page_title="Clima Hoje", page_icon="🌤️", layout="wide")
@@ -80,6 +91,21 @@ else:
             col3.metric("Umidade", f"{umidade}%")
             col4.metric("Vento", f"{vento} m/s")
 
+        # GRÁFICO DE CLIMA ATUAL
+        st.subheader("📊 Clima Atual — Visão Geral")
+        st.plotly_chart(
+            grafico_clima_atual(df_filtrado),
+            use_container_width=True
+        )
+
+        # TABELA DO CLIMA ATUAL
+        st.subheader("📋 Detalhes do Clima Atual")
+        st.dataframe(
+            tabela_clima_atual(df_filtrado),
+            use_container_width=True,
+            hide_index=True
+        )
+
         # BLOCO 2: Qualidade do Ar (Novo!)
         st.markdown("### 🌱 Qualidade do Ar")
         with st.container(border=True):
@@ -92,7 +118,13 @@ else:
             c_ar2.metric("PM2.5", f"{pm2_5}", help="Partículas finas (inaláveis)")
             c_ar3.metric("PM10", f"{pm10}", help="Partículas inaláveis grossas")
 
-        st.divider()
+        # 👉 GRÁFICO DE POLUIÇÃO DO AR
+        df_poluicao = f.formatar_poluicao_df(dados_poluicao)
+
+        st.plotly_chart(
+            grafico_poluicao_ar(df_poluicao),
+            use_container_width=True
+        )
 
         # BLOCO 3: Tabela 48h Estilizada
         st.subheader("📅 Previsão: Próximas 48 Horas")
@@ -124,6 +156,17 @@ else:
                     "Clima",
                 )
             }
+        )
+        st.divider()
+
+        # BLOCO 4: Gráfico da Previsão de Temperatura
+        st.subheader("📈 Tendência de Temperatura — Próximos 5 Dias")
+
+        df_previsao_plot = f.formatar_previsao_grafico(lista_previsao_raw)
+
+        st.plotly_chart(
+            grafico_previsao_temperatura(df_previsao_plot),
+            use_container_width=True
         )
         
     except Exception as e:

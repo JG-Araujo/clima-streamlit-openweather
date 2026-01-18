@@ -1,58 +1,60 @@
 import streamlit as st
-import pandas as pd
 import filtros as f
-from util import carregar_cidades
 import time
 
-# 1. Configuração da página (título na aba do navegador)
-st.set_page_config(page_title="Clima Hoje", page_icon=":sun_with_face:", layout="wide")
+# 1. Configuração da página
+st.set_page_config(page_title="Clima Hoje", page_icon="🌤️", layout="wide")
 
-# 2. Título e Subtítulo na página
-st.title("Clima Hoje :sun_with_face:")
-st.write("Veja as métricas de clima")
-st.caption("Escolha uma cidade na barra lateral para ver o clima atual e a previsão.")
-# carregando lista de cidades em um DataFrame
-dados = {
-    'Cidade': carregar_cidades()
-}
-############### LER CIDADES DISPONIVEIS APENAS UMA VEZ (FAZER FUNÇÃO) ###############
-df = pd.DataFrame(dados)
-opcoes = ['selecione uma cidade'] + df['Cidade'].unique().tolist()
+st.title("Clima Hoje 🌤️")
+st.write("Veja as métricas de clima em tempo real.")
+st.caption("Use a barra lateral para filtrar por País e Cidade.")
 
-# 4. Barra Lateral (Sidebar) para Filtros
-st.sidebar.header("Filtros")
-cidade_selecionada = st.sidebar.selectbox(
-    "selecione uma cidade",
-    options=opcoes,
-)
-# Filtrando o DataFrame baseado na escolha
-if cidade_selecionada == 'selecione uma cidade':
-    st.info("Por favor, selecione uma cidade para ver o clima.")
+# 2. Carregar o banco de dados gigante (Acontece 1 vez e fica em cache)
+with st.spinner("Carregando banco de dados de cidades..."):
+    df_global = f.carregar_dados_globais()
+
+# 3. Renderizar Sidebar e Capturar a escolha do usuário
+# A função retorna os dados da cidade escolhida ou None
+cidade_escolhida = f.renderizar_filtros(df_global)
+
+# 4. Lógica de Exibição
+if cidade_escolhida is None:
+    st.info("👈 O banco de dados está vazio ou não foi carregado.")
+    
+elif isinstance(cidade_escolhida, str): 
+    # Fallback caso algo dê errado no filtro e não retorne a linha
+    st.warning("Selecione uma cidade válida.")
+    
 else:
-    df_filtrado = f.previsao(cidade_selecionada)
+    # Se temos uma cidade escolhida, buscamos a previsão
+    # Passamos os dados completos (que incluem lat/lon)
+    try:
+        df_filtrado = f.previsao(cidade_escolhida)
+        
+        # Métricas
+        col1, col2, col3 = st.columns(3)
+        
+        # Usamos .iloc[0] para pegar o valor escalar (evita erros de Series)
+        cidade_nome = df_filtrado['Cidade'].iloc[0]
+        temp = df_filtrado["Temperatura"].iloc[0]
+        sensacao = df_filtrado["Sensação Térmica"].iloc[0]
+        umidade = df_filtrado["Umidade"].iloc[0]
+        descricao = df_filtrado["Descrição"].iloc[0]
+        vento = df_filtrado["Velocidade do Vento"].iloc[0]
+        previsao = df_filtrado["Previsão"].iloc[0]
+        poluicao = df_filtrado["Poluição do Ar"].iloc[0]
 
-   # Métricas do dia atual (primeira linha do df FILTRADO)
-    col1, col2, col3 = st.columns(3)
-    cidade = df_filtrado['Cidade'][0]
-    Temp = df_filtrado["Temperatura"][0]
-    Sensacao = df_filtrado["Sensação Térmica"][0]
-    Umidade = df_filtrado["Umidade"][0]
-    Descricao = df_filtrado["Descrição"][0]
-    Vento = df_filtrado["Velocidade do Vento"][0]
-
-    hora = time.strftime("%H:%M:%S", time.localtime())
-    
-    st.write(f"Atualizado às: {hora}")
-    col1.metric("CIDADE", f"{cidade}") 
-    col1.metric("UMIDADE", f"{int(Umidade)}%")
-    
-    col2.metric("TEMPERATURA",f"{int(Temp)}°C")
-    col2.metric("SENSAÇÃO TÉRMICA", f"{int(Sensacao)}°C")
-    
-    col3.metric("DESCRIÇÃO", f"{Descricao}")
-    col3.metric("VELOCIDADE DO VENTO", f"{int(Vento)} m/s")
-
-    # # 6. Exibindo o Gráfico com Plotly
-    # st.subheader(f"Gráfico de Vendas - {categoria_selecionada}")
-    # fig = px.bar(df_filtrado, x='Produto', y='Vendas', color='Produto', title="Vendas por Produto")
-    # st.plotly_chart(fig, use_container_width=True)
+        hora = time.strftime("%H:%M:%S", time.localtime())
+        st.write(f"Última atualização: {hora}")
+        
+        col1.metric("CIDADE", f"{cidade_nome}")
+        col1.metric("UMIDADE", f"{int(umidade)}%")
+        
+        col2.metric("TEMPERATURA", f"{int(temp)}°C")
+        col2.metric("SENSAÇÃO TÉRMICA", f"{int(sensacao)}°C")
+        
+        col3.metric("DESCRIÇÃO", f"{descricao.title()}")
+        col3.metric("VENTO", f"{vento} m/s")
+        
+    except Exception as e:
+        st.error(f"Erro ao buscar dados da API: {e}")

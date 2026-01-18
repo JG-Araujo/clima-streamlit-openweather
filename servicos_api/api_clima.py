@@ -1,7 +1,9 @@
 import requests
 import sys
-from config import chave_api
+#from config import chave_api
 sys.stdout.reconfigure(encoding='utf-8')
+
+chave_api = "6533ed7c4156b67c8bd9f53f295c87a1"
 
 def obter_coordenadas(cidade):
     url = "https://api.openweathermap.org/geo/1.0/direct"
@@ -107,6 +109,6 @@ if __name__ == "__main__":
     latitude, longitude = obter_coordenadas(cidade)
     print("Coordenadas:", latitude, longitude)
 
-    print("Clima atual:", obter_clima_atual(latitude, longitude))
+   # print("Clima atual:", obter_clima_atual(latitude, longitude))
     print("Previsão:", obter_previsao(latitude, longitude)[:3])
-    print("Poluição do ar:", obter_poluicao_ar(latitude, longitude))
+    #print("Poluição do ar:", obter_poluicao_ar(latitude, longitude))

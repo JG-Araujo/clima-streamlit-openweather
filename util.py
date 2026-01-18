@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import json
 
 def padronizar_colunas(df: pd.DataFrame) -> pd.DataFrame:
     """Ajustes leves: tipos e colunas auxiliares."""
@@ -18,7 +19,7 @@ def carregar_cidades() -> list:
     try:
         df = pd.read_json("city.list.json")
         df = padronizar_colunas(df)
-        return df['name'].tolist()
+        return df['name'].tolist(), df['country'].tolist(), df['coord'].tolist()
     except FileNotFoundError:
         st.error(f"Arquivo não encontrado: cities_list.csv ")
         st.stop()
@@ -28,3 +29,17 @@ def carregar_cidades() -> list:
     except Exception as e:
         st.error(f"Erro ao carregar o arquivo CSV: {e}")
         st.stop()
+
+def traduzir_aqi(aqi_valor):
+    """
+    Traduz o índice AQI (1-5) da OpenWeather para texto e cor.
+    """
+    mapa = {
+        1: ("Bom", "🟢", "#00e400"),      # Verde
+        2: ("Razoável", "🟡", "#ffff00"), # Amarelo
+        3: ("Moderado", "🟠", "#ff7e00"), # Laranja
+        4: ("Ruim", "🔴", "#ff0000"),     # Vermelho
+        5: ("Muito Ruim", "🟣", "#8f3f97") # Roxo
+    }
+    # Retorna (Texto, Emoji, CorHex)
+    return mapa.get(aqi_valor, ("Desconhecido", "❓", "#808080"))

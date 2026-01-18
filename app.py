@@ -129,7 +129,7 @@ else:
         # BLOCO 3: Tabela 48h Estilizada
         st.subheader("📅 Previsão: Próximas 48 Horas")
         
-        df_48h = f.formatar_previsao_48h(lista_previsao_raw)
+        df_48h = formatar_previsao_48h(lista_previsao_raw)
         
         # Convertemos temperatura para número puro para usar o ProgressColumn
         # Removemos o "°C" da string para que o gráfico funcione

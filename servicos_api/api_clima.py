@@ -100,7 +100,6 @@ def obter_poluicao_ar(latitude, longitude):
         "pm10": informacoes["components"]["pm10"]
     }
 
-
 if __name__ == "__main__":
     cidade = "Fortaleza"
 
@@ -108,5 +107,5 @@ if __name__ == "__main__":
     print("Coordenadas:", latitude, longitude)
 
    # print("Clima atual:", obter_clima_atual(latitude, longitude))
-    print("Previsão:", obter_previsao(latitude, longitude)[:3])
+    print("Previsão:", obter_previsao(latitude, longitude)[:16])
     #print("Poluição do ar:", obter_poluicao_ar(latitude, longitude))
